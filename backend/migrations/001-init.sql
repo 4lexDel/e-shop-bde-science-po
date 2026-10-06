@@ -1,41 +1,4 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
-CREATE TABLE IF NOT EXISTS products(
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    name varchar(255) NOT NULL,
-    slug varchar(255) UNIQUE NOT NULL,
-    description text NOT NULL,
-    "priceCents" integer NOT NULL,
-    currency varchar(3) NOT NULL DEFAULT 'eur',
-    theme varchar(255) NOT NULL,
-    active boolean NOT NULL DEFAULT true,
-    "createdAt" timestamptz NOT NULL DEFAULT now(),
-    "updatedAt" timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS orders(
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    status varchar(20) NOT NULL DEFAULT 'PENDING',
-    "customerFirstName" varchar(255) NOT NULL,
-    "customerLastName" varchar(255) NOT NULL,
-    "customerEmail" varchar(255) NOT NULL,
-    "addressLine1" varchar(255) NOT NULL,
-    "addressLine2" varchar(255),
-    "postalCode" varchar(50) NOT NULL,
-    city varchar(255) NOT NULL,
-    country varchar(2) NOT NULL,
-    "totalCents" integer NOT NULL,
-    "stripeSessionId" varchar(255) UNIQUE,
-    "createdAt" timestamptz NOT NULL DEFAULT now(),
-    "updatedAt" timestamptz NOT NULL DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS order_items(
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    "orderId" uuid NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-    "productId" uuid NOT NULL,
-    name varchar(255) NOT NULL,
-    "unitPriceCents" integer NOT NULL,
-    quantity integer NOT NULL
-);
-
+CREATE TABLE IF NOT EXISTS products (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name varchar(255) NOT NULL, slug varchar(255) UNIQUE NOT NULL, description text NOT NULL, "priceCents" integer NOT NULL, currency varchar(3) NOT NULL DEFAULT 'eur', theme varchar(255) NOT NULL, active boolean NOT NULL DEFAULT true, "stockQuantity" integer NOT NULL DEFAULT 0, "reservedQuantity" integer NOT NULL DEFAULT 0, "createdAt" timestamptz NOT NULL DEFAULT now(), "updatedAt" timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS orders (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), status varchar(20) NOT NULL DEFAULT 'PENDING', "customerFirstName" varchar(255) NOT NULL, "customerLastName" varchar(255) NOT NULL, "customerEmail" varchar(255) NOT NULL, "addressLine1" varchar(255) NOT NULL, "addressLine2" varchar(255), "postalCode" varchar(50) NOT NULL, city varchar(255) NOT NULL, country varchar(2) NOT NULL, "totalCents" integer NOT NULL, "stripeSessionId" varchar(255) UNIQUE, "transactionId" varchar(255), "createdAt" timestamptz NOT NULL DEFAULT now(), "updatedAt" timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS order_items (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), "orderId" uuid NOT NULL REFERENCES orders(id) ON DELETE CASCADE, "productId" uuid NOT NULL, name varchar(255) NOT NULL, "unitPriceCents" integer NOT NULL, quantity integer NOT NULL);

@@ -1,11 +1,4 @@
-import { Order } from "../models";
-
-export async function markPaid(id: string) {
-  const o = await Order.findOne({ where: { stripeSessionId: id } });
-  if (o && o.status !== "PAID") await o.update({ status: "PAID" });
-}
-
-export async function markCanceled(id: string) {
-  const o = await Order.findOne({ where: { stripeSessionId: id } });
-  if (o && o.status === "PENDING") await o.update({ status: "CANCELED" });
-}
+import {Order,OrderItem,Product} from '../models';import {sequelize} from '../db';
+export async function markPaid(sessionId:string,transactionId:string){const tx=await sequelize.transaction();try{const order=await Order.findOne({where:{stripeSessionId:sessionId},include:[OrderItem],transaction:tx,lock:tx.LOCK.UPDATE});if(!order||order.status==='PAID'){await tx.commit();return;}const items=order.get('OrderItems') as OrderItem[];for(const item of items){const p=await Product.findByPk(item.productId,{transaction:tx,lock:tx.LOCK.UPDATE});if(!p||p.stockQuantity<item.quantity||p.stockQuantity-p.reservedQuantity<0)throw new Error('Inventory unavailable after payment');await p.decrement({stockQuantity:item.quantity,reservedQuantity:item.quantity},{transaction:tx});}await order.update({status:'PAID',transactionId},{transaction:tx});await tx.commit();}catch(e){await tx.rollback();throw e;}}
+export async function releaseReservation(sessionId:string,status:'CANCELED'|'FAILED'='CANCELED'){const tx=await sequelize.transaction();try{const order=await Order.findOne({where:{stripeSessionId:sessionId},include:[OrderItem],transaction:tx,lock:tx.LOCK.UPDATE});if(!order||order.status!=='PENDING'){await tx.commit();return;}const items=order.get('OrderItems') as OrderItem[];for(const item of items){const p=await Product.findByPk(item.productId,{transaction:tx,lock:tx.LOCK.UPDATE});if(p)await p.decrement({reservedQuantity:item.quantity},{transaction:tx});}await order.update({status},{transaction:tx});await tx.commit();}catch(e){await tx.rollback();throw e;}}
+export async function getOrderBySession(sessionId:string){return Order.findOne({where:{stripeSessionId:sessionId},include:[OrderItem]});}
