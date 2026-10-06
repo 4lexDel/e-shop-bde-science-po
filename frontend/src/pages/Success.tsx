@@ -1,0 +1,1 @@
+import{Link}from'react-router-dom';export default function Success(){return <main className="success"><div>✓</div><h1>Paiement de test réussi</h1><p>Stripe a confirmé le paiement. En production, cette étape déclencherait l'accès sécurisé au téléchargement.</p><Link to="/">Retour à la boutique</Link></main>}

@@ -1,0 +1,32 @@
+import express from "express";
+import cors from "cors";
+import { config } from "./config";
+import { sequelize } from "./db";
+import "./models";
+import productRoutes from "./routes/productRoutes";
+import checkoutRoutes from "./routes/checkoutRoutes";
+import { stripeWebhook } from "./webhooks/stripeWebhook";
+
+const app = express();
+
+app.use(cors({ origin: config.frontendUrl }));
+
+app.post(
+  "/api/webhooks/stripe",
+  express.raw({ type: "application/json" }),
+  stripeWebhook,
+);
+
+app.use(express.json({ limit: "100kb" }));
+app.use("/api/products", productRoutes);
+app.use("/api/checkout", checkoutRoutes);
+
+app.get("/api/health", (_req, res) => res.json({ ok: true }));
+sequelize
+  .authenticate()
+  .then(() =>
+    app.listen(config.port, () =>
+      console.log(`API http://localhost:${config.port}`),
+    ),
+  )
+  .catch(console.error);

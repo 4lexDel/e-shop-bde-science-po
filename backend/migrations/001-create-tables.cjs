@@ -1,0 +1,13 @@
+module.exports = {
+  up: async (q) =>
+    q.sequelize.query(
+      require("fs").readFileSync(
+        require("path").join(__dirname, "001-init.sql"),
+        "utf8",
+      ),
+    ),
+  down: async (q) =>
+    q.sequelize.query(
+      "DROP TABLE IF EXISTS order_items;DROP TABLE IF EXISTS orders;DROP TABLE IF EXISTS products;",
+    ),
+};

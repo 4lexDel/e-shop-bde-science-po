@@ -1,0 +1,1 @@
+import{useCart}from'../store/cart';export default function Header(){const n=useCart(s=>s.items.reduce((a,i)=>a+i.quantity,0));return <header><strong>THREAD<span>POP</span></strong><nav>Collections · Thèmes · Support</nav><b>Panier ({n})</b></header>}
